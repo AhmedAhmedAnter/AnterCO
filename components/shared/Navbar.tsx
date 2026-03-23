@@ -20,20 +20,34 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet"
+import {
+    Dropdown,
+    DropdownContent,
+    DropdownItem,
+    DropdownTrigger,
+} from "@/components/ui/dropdown"
+
+export interface NavLink {
+    label: string
+    href: string
+    hasDropdown?: boolean
+    subLinks?: { label: string; href: string }[]
+}
 
 interface NavbarProps {
+    links: NavLink[]
+    logo?: string
     className?: string
 }
 
-const navLinks = [
-    { label: "Shop", href: "/shop", hasDropdown: true },
-    { label: "On Sale", href: "/on-sale" },
-    { label: "New Arrivals", href: "/new-arrivals" },
-    { label: "Brands", href: "/brands" },
-]
-
-export const Navbar = ({ className }: NavbarProps) => {
+export const Navbar = ({ links, logo = "ANTER.CO", className }: NavbarProps) => {
     const [isMounted, setIsMounted] = React.useState(false)
+    const [openMobileDropdown, setOpenMobileDropdown] = React.useState<
+        string | null
+    >(null)
+    const [openDesktopDropdown, setOpenDesktopDropdown] = React.useState<
+        string | null
+    >(null)
 
     React.useEffect(() => {
         setIsMounted(true)
@@ -67,26 +81,75 @@ export const Navbar = ({ className }: NavbarProps) => {
                             <SheetContent side="left" className="w-75">
                                 <SheetHeader>
                                     <SheetTitle className="text-left font-sans font-bold text-2xl">
-                                        ANTER.CO
+                                        {logo}
                                     </SheetTitle>
                                 </SheetHeader>
                                 <Box className="flex flex-col gap-6 mt-10">
-                                    {navLinks.map((link) => (
-                                        <Link
-                                            key={link.label}
-                                            href={link.href}
-                                            className="flex items-center justify-between group px-2"
-                                        >
-                                            <Text className="text-lg font-secondary font-medium">
-                                                {link.label}
-                                            </Text>
-                                            {link.hasDropdown && (
-                                                <HugeiconsIcon
-                                                    icon={ArrowDown01Icon}
-                                                    size={18}
-                                                />
-                                            )}
-                                        </Link>
+                                    {links.map((link) => (
+                                        <Box key={link.label} className="w-full">
+                                            <Box
+                                                className="flex items-center justify-between group px-2 py-3 cursor-pointer rounded-xl hover:bg-black/5 active:scale-[0.98] transition-all"
+                                                onClick={() =>
+                                                    link.hasDropdown &&
+                                                    setOpenMobileDropdown(
+                                                        openMobileDropdown ===
+                                                            link.label
+                                                            ? null
+                                                            : link.label
+                                                    )
+                                                }
+                                            >
+                                                <Link
+                                                    href={link.href}
+                                                    className="flex-1"
+                                                    onClick={(e) => {
+                                                        if (link.hasDropdown)
+                                                            e.preventDefault()
+                                                    }}
+                                                >
+                                                    <Text className="text-lg font-secondary font-medium">
+                                                        {link.label}
+                                                    </Text>
+                                                </Link>
+                                                {link.hasDropdown && (
+                                                    <HugeiconsIcon
+                                                        icon={ArrowDown01Icon}
+                                                        size={18}
+                                                        className={cn(
+                                                            "transition-transform",
+                                                            openMobileDropdown ===
+                                                                link.label &&
+                                                                "rotate-180"
+                                                        )}
+                                                    />
+                                                )}
+                                            </Box>
+                                            {link.hasDropdown &&
+                                                openMobileDropdown ===
+                                                    link.label && (
+                                                    <Box className="flex flex-col gap-4 mt-4 pl-6 border-l border-black/5">
+                                                        {link.subLinks?.map(
+                                                            (sub) => (
+                                                                <Link
+                                                                    key={
+                                                                        sub.label
+                                                                    }
+                                                                    href={
+                                                                        sub.href
+                                                                    }
+                                                                    className="hover:translate-x-1 active:scale-95 transition-all"
+                                                                >
+                                                                    <Text className="text-base font-secondary text-black/60 hover:text-black">
+                                                                        {
+                                                                            sub.label
+                                                                        }
+                                                                    </Text>
+                                                                </Link>
+                                                            )
+                                                        )}
+                                                    </Box>
+                                                )}
+                                        </Box>
                                     ))}
                                 </Box>
                             </SheetContent>
@@ -95,33 +158,77 @@ export const Navbar = ({ className }: NavbarProps) => {
                 </Box>
 
                 {/* Logo */}
-                <Link href="/">
+                <Link
+                    href="/"
+                    className="active:scale-95 transition-transform"
+                >
                     <Text className="font-bold text-2xl lg:text-3xl font-sans tracking-tighter shrink-0">
-                        ANTER.CO
+                        {logo}
                     </Text>
                 </Link>
             </HStack>
 
             {/* Nav Links - Desktop only */}
             <HStack className="hidden lg:flex gap-6 shrink-0">
-                {navLinks.map((link) => (
-                    <Link
-                        key={link.label}
-                        href={link.href}
-                        className="flex items-center gap-1 group"
-                    >
-                        <Text className="text-base font-secondary hover:opacity-70 transition-opacity">
-                            {link.label}
-                        </Text>
-                        {link.hasDropdown && (
-                            <HugeiconsIcon
-                                icon={ArrowDown01Icon}
-                                size={16}
-                                className="group-hover:opacity-70 transition-opacity"
-                            />
-                        )}
-                    </Link>
-                ))}
+                {links.map((link) =>
+                    link.hasDropdown ? (
+                        <Box
+                            key={link.label}
+                            onMouseEnter={() =>
+                                setOpenDesktopDropdown(link.label)
+                            }
+                            onMouseLeave={() => setOpenDesktopDropdown(null)}
+                        >
+                            <Dropdown
+                                open={openDesktopDropdown === link.label}
+                                onOpenChange={(open) =>
+                                    setOpenDesktopDropdown(
+                                        open ? link.label : null
+                                    )
+                                }
+                            >
+                                <DropdownTrigger asChild>
+                                    <Box className="flex items-center gap-1 group cursor-pointer outline-none active:scale-95 transition-all">
+                                        <Text className="text-base font-secondary group-hover:opacity-70 transition-opacity">
+                                            {link.label}
+                                        </Text>
+                                        <HugeiconsIcon
+                                            icon={ArrowDown01Icon}
+                                            size={16}
+                                            className="group-hover:opacity-70 transition-opacity"
+                                        />
+                                    </Box>
+                                </DropdownTrigger>
+                                <DropdownContent className="w-52 p-2">
+                                    {link.subLinks?.map((sub) => (
+                                        <DropdownItem
+                                            key={sub.label}
+                                            asChild
+                                            className="rounded-lg px-3 py-2 cursor-pointer hover:bg-black/5 active:scale-[0.98] transition-all"
+                                        >
+                                            <Link
+                                                href={sub.href}
+                                                className="w-full font-secondary text-sm"
+                                            >
+                                                {sub.label}
+                                            </Link>
+                                        </DropdownItem>
+                                    ))}
+                                </DropdownContent>
+                            </Dropdown>
+                        </Box>
+                    ) : (
+                        <Link
+                            key={link.label}
+                            href={link.href}
+                            className="flex items-center gap-1 group active:scale-95 transition-all"
+                        >
+                            <Text className="text-base font-secondary hover:opacity-70 transition-opacity">
+                                {link.label}
+                            </Text>
+                        </Link>
+                    )
+                )}
             </HStack>
 
             {/* Search - Responsive */}

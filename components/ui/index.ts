@@ -13,3 +13,4 @@ export * from "./separator";
 export * from "./tooltip";
 export * from "./sheet";
 export * from "./checkbox";
+export * from "./dropdown";
