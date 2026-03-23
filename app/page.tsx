@@ -1,6 +1,7 @@
 import { VStack } from "@/components/layout"
 import { Navbar } from "@/components/shared"
 import { StoreAlert } from "@/components/store"
+import { Hero } from "@/components/pages/home"
 
 const navLinks = [
   {
@@ -29,6 +30,8 @@ export default function Home() {
         href="/sign-up"
       />
       <Navbar links={navLinks} logo="ANTER.CO" />
+      <Hero />
+    
     </VStack>
   )
 }
